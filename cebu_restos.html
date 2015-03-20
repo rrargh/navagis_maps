@@ -1,0 +1,238 @@
+ <!DOCTYPE html>
+<html>
+    <head>
+    	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
+    	<script>
+			var cebu_city = new google.maps.LatLng(10.3156992, 123.8854366);
+
+            // Define a circle and set its editable property to true.
+            var circle = new google.maps.Circle({
+                center: cebu_city,
+                radius: 150,
+                editable: true
+            });
+
+            // Define a rectangle and set its editable property to true.
+            var rectangle = new google.maps.Rectangle({
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(10.314, 123.883),
+                    new google.maps.LatLng(10.317, 123.886)
+                ),
+                editable: true
+            });
+
+            // Set up control for centering map
+			function CenterControl(controlDiv, map) {
+
+			    // Set CSS for the control border
+				var controlUI = document.createElement('div');
+				controlUI.style.backgroundColor = '#fff';
+				controlUI.style.border = '2px solid #fff';
+				controlUI.style.borderRadius = '3px';
+				controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+				controlUI.style.cursor = 'pointer';
+				controlUI.style.marginBottom = '22px';
+				controlUI.style.textAlign = 'center';
+				controlUI.title = 'Click to recenter the map';
+				controlDiv.appendChild(controlUI);
+ 
+    			// Set CSS for the control interior
+				var controlText = document.createElement('div');
+				controlText.style.color = 'rgb(25,25,25)';
+				controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+				controlText.style.fontSize = '16px';
+				controlText.style.lineHeight = '38px';
+				controlText.style.paddingLeft = '5px';
+				controlText.style.paddingRight = '5px';
+				controlText.innerHTML = 'Center Map';
+				controlUI.appendChild(controlText);
+
+				// Setup the click event listeners: simply set the map to
+				// Cebu City
+				google.maps.event.addDomListener(controlUI, 'click', function() {
+				  map.setCenter(cebu_city);
+                  map.setZoom(15);
+				});
+
+			}
+
+            // Set up control for drawing a circle
+            function DrawCircleControl(controlDiv, map) {
+
+                // Set CSS for the control border
+                var controlUI = document.createElement('div');
+                controlUI.style.backgroundColor = '#fff';
+                controlUI.style.border = '2px solid #fff';
+                controlUI.style.borderRadius = '3px';
+                controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+                controlUI.style.cursor = 'pointer';
+                controlUI.style.marginBottom = '22px';
+                controlUI.style.textAlign = 'center';
+                controlUI.title = 'Click to draw a circle';
+                controlDiv.appendChild(controlUI);
+ 
+                // Set CSS for the control interior
+                var controlText = document.createElement('div');
+                controlText.style.color = 'rgb(25,25,25)';
+                controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+                controlText.style.fontSize = '16px';
+                controlText.style.lineHeight = '38px';
+                controlText.style.paddingLeft = '5px';
+                controlText.style.paddingRight = '5px';
+                controlText.innerHTML = 'Draw Circle';
+                controlUI.appendChild(controlText);
+
+                // Set up the click event listeners: Draw a circle
+                google.maps.event.addDomListener(controlUI, 'click', function() {
+                    circle.setMap(map);
+                });
+                
+            }
+
+            // Set up control for drawing a rectangle
+            function DrawRectangleControl(controlDiv, map) {
+
+                // Set CSS for the control border
+                var controlUI = document.createElement('div');
+                controlUI.style.backgroundColor = '#fff';
+                controlUI.style.border = '2px solid #fff';
+                controlUI.style.borderRadius = '3px';
+                controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+                controlUI.style.cursor = 'pointer';
+                controlUI.style.marginBottom = '22px';
+                controlUI.style.textAlign = 'center';
+                controlUI.title = 'Click to draw a rectangle';
+                controlDiv.appendChild(controlUI);
+ 
+                // Set CSS for the control interior
+                var controlText = document.createElement('div');
+                controlText.style.color = 'rgb(25,25,25)';
+                controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+                controlText.style.fontSize = '16px';
+                controlText.style.lineHeight = '38px';
+                controlText.style.paddingLeft = '5px';
+                controlText.style.paddingRight = '5px';
+                controlText.innerHTML = 'Draw Rectangle';
+                controlUI.appendChild(controlText);
+
+                // Set up the click event listeners: Draw a rectangle
+                google.maps.event.addDomListener(controlUI, 'click', function() {
+                    rectangle.setMap(map);
+                });
+
+            }
+
+            // Set up control for clearing the screen of drawings
+            function ClearScreenControl(controlDiv, map) {
+
+                // Set CSS for the control border
+                var controlUI = document.createElement('div');
+                controlUI.style.backgroundColor = '#fff';
+                controlUI.style.border = '2px solid #fff';
+                controlUI.style.borderRadius = '3px';
+                controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+                controlUI.style.cursor = 'pointer';
+                controlUI.style.marginBottom = '22px';
+                controlUI.style.textAlign = 'center';
+                controlUI.title = 'Click to clear screen';
+                controlDiv.appendChild(controlUI);
+ 
+                // Set CSS for the control interior
+                var controlText = document.createElement('div');
+                controlText.style.color = 'rgb(25,25,25)';
+                controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+                controlText.style.fontSize = '16px';
+                controlText.style.lineHeight = '38px';
+                controlText.style.paddingLeft = '5px';
+                controlText.style.paddingRight = '5px';
+                controlText.innerHTML = 'Clear Screen';
+                controlUI.appendChild(controlText);
+
+                // Set up the click event listeners: Clear screen
+                google.maps.event.addDomListener(controlUI, 'click', function() {
+                    circle.setMap(null);
+                    rectangle.setMap(null);
+                });
+            }
+
+
+			function initialize() {
+
+				var mapOptions = {
+				    center: cebu_city,
+				    zoom: 12,
+				};
+				map = new google.maps.Map(document.getElementById('map-canvas'),
+				    mapOptions);
+
+                var request = {
+                    location: cebu_city,
+                    radius: 50000,
+                    types: ['restaurant']
+                };
+                infowindow = new google.maps.InfoWindow();
+                var service = new google.maps.places.PlacesService(map);
+                service.nearbySearch(request, callback);
+
+				// Create the DIV to hold the control and
+				// call the CenterControl() constructor passing
+				// in this DIV.
+				var centerControlDiv = document.createElement('div');
+				var centerControl = new CenterControl(centerControlDiv, map);
+
+				centerControlDiv.index = 1;
+				map.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
+
+				var clearScreenControlDiv = document.createElement('div');
+				var clearScreenControl = new ClearScreenControl(clearScreenControlDiv, map);
+
+				clearScreenControlDiv.index = 2;
+				map.controls[google.maps.ControlPosition.TOP_LEFT].push(clearScreenControlDiv);
+
+                var drawCircleControlDiv = document.createElement('div');
+                var drawCircleControl = new DrawCircleControl(drawCircleControlDiv, map);
+
+                drawCircleControlDiv.index = 1;
+                map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(drawCircleControlDiv);
+
+                var drawRectangleControlDiv = document.createElement('div');
+                var drawRectangleControl = new DrawRectangleControl(drawRectangleControlDiv, map);
+
+                drawRectangleControlDiv.index = 2;
+                map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(drawRectangleControlDiv);
+
+			}
+
+
+            // callback function for when places request is made
+            function callback(results, status) {
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    for (var i = 0; i < results.length; i++) {
+                        createMarker(results[i]);
+                    }
+                }
+            }
+
+
+            // create a marker for a place, and show its info window when clicked
+            function createMarker(place) {
+                var marker = new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location
+                });
+
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.setContent(place.name);
+                    infowindow.open(map, this);
+                });
+            }
+
+
+			google.maps.event.addDomListener(window, 'load', initialize);
+
+        </script>
+    </head>
+    <body>
+        <div id="map-canvas" style="width:600px;height:480px;"></div>
+    </body>
+</html> 
