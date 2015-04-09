@@ -1,25 +1,162 @@
  <!DOCTYPE html>
 <html>
     <head>
+        <style>
+            html, body, #map-canvas {
+                height: 100%;
+                margin: 0px;
+                padding: 0px
+            }
+            .controls {
+                margin-top: 16px;
+                border: 1px solid transparent;
+                border-radius: 2px 0 0 2px;
+                box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                height: 32px;
+                outline: none;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            }
+
+            #pac-input {
+                background-color: #fff;
+                font-family: Roboto;
+                font-size: 15px;
+                font-weight: 300;
+                margin-left: 12px;
+                padding: 0 11px 0 13px;
+                text-overflow: ellipsis;
+                width: 400px;
+            }
+
+            #pac-input:focus {
+                border-color: #4d90fe;
+            }
+
+            .pac-container {
+                font-family: Roboto;
+            }
+
+            #type-selector {
+                color: #fff;
+                background-color: #4d90fe;
+                padding: 5px 11px 0px 11px;
+            }
+
+            #type-selector label {
+                font-family: Roboto;
+                font-size: 13px;
+                font-weight: 300;
+            }
+
+        </style>
+
     	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
     	<script>
 			var cebu_city = new google.maps.LatLng(10.3156992, 123.8854366);
+            var rect_ne = new google.maps.LatLng(10.314, 123.883);
+            var rect_sw = new google.maps.LatLng(10.317, 123.886);
+            var markers = [];
 
             // Define a circle and set its editable property to true.
             var circle = new google.maps.Circle({
                 center: cebu_city,
                 radius: 150,
-                editable: true
+                editable: true,
+                // draggable: true
+
             });
 
             // Define a rectangle and set its editable property to true.
             var rectangle = new google.maps.Rectangle({
                 bounds: new google.maps.LatLngBounds(
-                    new google.maps.LatLng(10.314, 123.883),
-                    new google.maps.LatLng(10.317, 123.886)
+                    rect_ne, rect_sw
+                    // new google.maps.LatLng(10.314, 123.883),
+                    // new google.maps.LatLng(10.317, 123.886)
                 ),
-                editable: true
+                editable: true,
+                // draggable: true
+
             });
+
+            // Add a marker to the map and push to the array.
+            function addMarker(location) {
+                var marker = new google.maps.Marker({
+                    position: location,
+                    map: map
+                });
+                markers.push(marker);
+            }
+            // Sets the map on all markers in the array.
+            function setAllMap(map) {
+                for (var i = 0; i < markers.length; i++) {
+                    markers[i].setMap(map);
+                }
+            }
+
+            // Removes the markers from the map, but keeps them in the array.
+            function clearMarkers() {
+                setAllMap(null);
+            }
+
+            // Shows any markers currently in the array.
+            function showMarkers() {
+                setAllMap(map);
+            }
+
+            // Deletes all markers in the array by removing references to them.
+            function deleteMarkers() {
+                clearMarkers();
+                markers = [];
+            }
+
+
+            // create a marker for a place, and show its info window when clicked
+            function createMarker(place) {
+                var marker = new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map
+                });
+                markers.push(marker);
+
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.setContent(place.name);
+                    infowindow.open(map, this);
+                });
+            }
+
+
+            // callback function for when places request is made
+            function callback(results, status) {
+                deleteMarkers();
+                if (status == google.maps.places.PlacesServiceStatus.OK) {
+                    for (var i = 0; i < results.length; i++) {
+                        createMarker(results[i]);
+                    }
+                }
+            }
+
+            /** @this {google.maps.Rectangle} */
+            function showNewRect(event) {
+                // highlight restaurants within the rectangle
+                service.nearbySearch({
+                    bounds: rectangle.getBounds(),
+                    types: ['restaurant']
+                    },
+                    callback
+                );
+            }
+
+            function showNewCirc(event) {
+                service.nearbySearch({
+                    location: circle.getCenter(),
+                    radius: circle.getRadius(),
+                    types: ['restaurant']
+                    },
+                    callback
+                );
+            }
+
 
             // Set up control for centering map
 			function CenterControl(controlDiv, map) {
@@ -158,6 +295,8 @@
 
 			function initialize() {
 
+                var markers = [];
+
 				var mapOptions = {
 				    center: cebu_city,
 				    zoom: 12,
@@ -166,13 +305,83 @@
 				    mapOptions);
 
                 var request = {
+                    // placeId: 'ChIJvSXsc5dzqTMRYI7-mlFhFEI',
                     location: cebu_city,
                     radius: 50000,
                     types: ['restaurant']
                 };
                 infowindow = new google.maps.InfoWindow();
-                var service = new google.maps.places.PlacesService(map);
-                service.nearbySearch(request, callback);
+                service = new google.maps.places.PlacesService(map);
+                // initialService.getDetails(request, callback);
+                // initialService.nearbySearch(request, callback);
+
+
+/*
+                // Create the search box and link it to the UI element.
+                var input = (document.getElementById('pac-input'));
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+                var searchBox = new google.maps.places.SearchBox((input));
+
+
+                // [START region_getplaces]
+                // Listen for the event fired when the user selects an item from the
+                // pick list. Retrieve the matching places for that item.
+                google.maps.event.addListener(searchBox, 'places_changed', function() {
+                    var places = searchBox.getPlaces(type="restaurant");
+
+                    if (places.length == 0) {
+                        return;
+                    }
+                    for (var i = 0, marker; marker = markers[i]; i++) {
+                        marker.setMap(null);
+                    }
+
+                // For each place, get the icon, place name, and location.
+                markers = [];
+                var bounds = new google.maps.LatLngBounds();
+                for (var i = 0, place; place = places[i]; i++) {
+                    var image = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Create a marker for each place.
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        icon: image,
+                        title: place.name,
+                        position: place.geometry.location
+                    });
+
+                    markers.push(marker);
+
+                    bounds.extend(place.geometry.location);
+                }
+
+                    map.fitBounds(bounds);
+                });
+                // [END region_getplaces]
+
+                // Bias the SearchBox results towards places that are within the bounds of the
+                // current map's viewport.
+                google.maps.event.addListener(map, 'bounds_changed', function() {
+                    var bounds = map.getBounds();
+                    searchBox.setBounds(bounds);
+                });
+*/
+
+
+                // Add an event listener on the circle.
+                google.maps.event.addListener(circle, 'radius_changed', showNewCirc);
+                // Add an event listener on the rectangle.
+                google.maps.event.addListener(rectangle, 'bounds_changed', showNewRect);
+                // Define an info window on the map.
+                // rectangleInfoWindow = new google.maps.InfoWindow();
+
 
 				// Create the DIV to hold the control and
 				// call the CenterControl() constructor passing
@@ -203,36 +412,18 @@
 
 			}
 
-
-            // callback function for when places request is made
-            function callback(results, status) {
-                if (status == google.maps.places.PlacesServiceStatus.OK) {
-                    for (var i = 0; i < results.length; i++) {
-                        createMarker(results[i]);
-                    }
-                }
-            }
-
-
-            // create a marker for a place, and show its info window when clicked
-            function createMarker(place) {
-                var marker = new google.maps.Marker({
-                    map: map,
-                    position: place.geometry.location
-                });
-
-                google.maps.event.addListener(marker, 'click', function() {
-                    infowindow.setContent(place.name);
-                    infowindow.open(map, this);
-                });
-            }
-
-
 			google.maps.event.addDomListener(window, 'load', initialize);
 
         </script>
+        <style>
+            #target {
+                width: 345px;
+            }
+        </style>
+
     </head>
     <body>
+        <!--input id="pac-input" class="controls" type="text" placeholder="Search Box"-->
         <div id="map-canvas" style="width:600px;height:480px;"></div>
     </body>
 </html> 
