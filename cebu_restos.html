@@ -64,19 +64,13 @@
                 radius: 150,
                 editable: true,
                 // draggable: true
-
             });
 
             // Define a rectangle and set its editable property to true.
             var rectangle = new google.maps.Rectangle({
-                bounds: new google.maps.LatLngBounds(
-                    rect_ne, rect_sw
-                    // new google.maps.LatLng(10.314, 123.883),
-                    // new google.maps.LatLng(10.317, 123.886)
-                ),
+                bounds: new google.maps.LatLngBounds(rect_ne, rect_sw),
                 editable: true,
                 // draggable: true
-
             });
 
             // Add a marker to the map and push to the array.
@@ -120,7 +114,7 @@
                 markers.push(marker);
 
                 google.maps.event.addListener(marker, 'click', function() {
-                    infowindow.setContent(place.name);
+                    infowindow.setContent("<div><strong>" + place.name + "</strong><br>Types: " + place.types);
                     infowindow.open(map, this);
                 });
             }
@@ -142,6 +136,7 @@
                 service.nearbySearch({
                     bounds: rectangle.getBounds(),
                     types: ['restaurant']
+                    // keyword: input
                     },
                     callback
                 );
@@ -152,6 +147,7 @@
                     location: circle.getCenter(),
                     radius: circle.getRadius(),
                     types: ['restaurant']
+                    // keyword: input
                     },
                     callback
                 );
@@ -295,7 +291,7 @@
 
 			function initialize() {
 
-                var markers = [];
+                // var markers = [];
 
 				var mapOptions = {
 				    center: cebu_city,
@@ -309,6 +305,7 @@
                     location: cebu_city,
                     radius: 50000,
                     types: ['restaurant']
+                    // keyword: input
                 };
                 infowindow = new google.maps.InfoWindow();
                 service = new google.maps.places.PlacesService(map);
@@ -316,7 +313,7 @@
                 // initialService.nearbySearch(request, callback);
 
 
-/*
+
                 // Create the search box and link it to the UI element.
                 var input = (document.getElementById('pac-input'));
                 map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
@@ -328,39 +325,32 @@
                 // Listen for the event fired when the user selects an item from the
                 // pick list. Retrieve the matching places for that item.
                 google.maps.event.addListener(searchBox, 'places_changed', function() {
-                    var places = searchBox.getPlaces(type="restaurant");
+                    var places = searchBox.getPlaces();
 
                     if (places.length == 0) {
                         return;
                     }
-                    for (var i = 0, marker; marker = markers[i]; i++) {
-                        marker.setMap(null);
+                    deleteMarkers();
+
+                    // For each place, get the icon, place name, and location.
+                    //  markers = [];
+                    var bounds = new google.maps.LatLngBounds();
+                    for (var i = 0, place; place = places[i]; i++) {
+                        /*
+                        var image = {
+                            url: place.icon,
+                            size: new google.maps.Size(71, 71),
+                            origin: new google.maps.Point(0, 0),
+                            anchor: new google.maps.Point(17, 34),
+                            scaledSize: new google.maps.Size(25, 25)
+                        };
+                        */
+
+                        // Create a marker for each place.
+                        createMarker(place);
+
+                        bounds.extend(place.geometry.location);
                     }
-
-                // For each place, get the icon, place name, and location.
-                markers = [];
-                var bounds = new google.maps.LatLngBounds();
-                for (var i = 0, place; place = places[i]; i++) {
-                    var image = {
-                        url: place.icon,
-                        size: new google.maps.Size(71, 71),
-                        origin: new google.maps.Point(0, 0),
-                        anchor: new google.maps.Point(17, 34),
-                        scaledSize: new google.maps.Size(25, 25)
-                    };
-
-                    // Create a marker for each place.
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        icon: image,
-                        title: place.name,
-                        position: place.geometry.location
-                    });
-
-                    markers.push(marker);
-
-                    bounds.extend(place.geometry.location);
-                }
 
                     map.fitBounds(bounds);
                 });
@@ -372,7 +362,6 @@
                     var bounds = map.getBounds();
                     searchBox.setBounds(bounds);
                 });
-*/
 
 
                 // Add an event listener on the circle.
@@ -423,7 +412,7 @@
 
     </head>
     <body>
-        <!--input id="pac-input" class="controls" type="text" placeholder="Search Box"-->
+        <input id="pac-input" class="controls" type="text" placeholder="What do you want to eat in Cebu?">
         <div id="map-canvas" style="width:600px;height:480px;"></div>
     </body>
 </html> 
